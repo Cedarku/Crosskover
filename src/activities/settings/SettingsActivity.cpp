@@ -797,7 +797,7 @@ void SettingsActivity::syncQuickResumeTimeoutForSleepScreen(bool sleepScreenChan
 void SettingsActivity::openSleepTimeoutPicker() {
   startActivityForResult(
       std::make_unique<IntervalSelectionActivity>(
-          renderer, mappedInput, "SleepTimeoutInterval", StrId::STR_TIME_TO_SLEEP, StrId::STR_SLEEP_TIMER_STEP_HINT,
+          renderer, mappedInput, "SleepTimeoutInterval", StrId::STR_TIME_TO_SLEEP,
           SETTINGS.sleepTimeoutMinutes, CrossPointSettings::MIN_SLEEP_TIMEOUT_MINUTES,
           CrossPointSettings::MAX_SLEEP_TIMEOUT_MINUTES, 1, 5, StrId::STR_SLEEP_TIMER_VALUE_FORMAT,
           /*readerActivity=*/false, /*allowPowerAsConfirm=*/false, /*ignoreInitialConfirmRelease=*/true,
@@ -814,7 +814,7 @@ void SettingsActivity::openSleepTimeoutPicker() {
 void SettingsActivity::openLineHeightPicker() {
   startActivityForResult(
       std::make_unique<IntervalSelectionActivity>(
-          renderer, mappedInput, "LineHeightInterval", StrId::STR_LINE_SPACING, StrId::STR_PERCENT_STEP_HINT,
+          renderer, mappedInput, "LineHeightInterval", StrId::STR_LINE_SPACING,
           SETTINGS.lineHeightPercent, CrossPointSettings::MIN_LINE_HEIGHT_PERCENT,
           CrossPointSettings::MAX_LINE_HEIGHT_PERCENT, 1, 10, StrId::STR_NONE_OPT, /*readerActivity=*/false,
           /*allowPowerAsConfirm=*/false, /*ignoreInitialConfirmRelease=*/false, /*showPercentValue=*/true),
@@ -832,7 +832,7 @@ void SettingsActivity::openIdleTimeThresholdPicker() {
   startActivityForResult(
       std::make_unique<IntervalSelectionActivity>(
           renderer, mappedInput, "IdleTimeThresholdInterval", StrId::STR_IDLE_TIME_THRESHOLD,
-          StrId::STR_IDLE_TIME_THRESHOLD_STEP_HINT, SETTINGS.getReadingIdleTimeThresholdSeconds(),
+          SETTINGS.getReadingIdleTimeThresholdSeconds(),
           CrossPointSettings::MIN_READING_IDLE_TIME_THRESHOLD_SECONDS,
           CrossPointSettings::MAX_READING_IDLE_TIME_THRESHOLD_SECONDS,
           CrossPointSettings::READING_IDLE_TIME_THRESHOLD_UNIT_SECONDS, 60, StrId::STR_SECONDS_VALUE_FORMAT,
