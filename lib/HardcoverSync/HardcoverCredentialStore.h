@@ -2,13 +2,13 @@
 #include <string>
 
 /**
- * Singleton class for storing the Hardcover API token on the SD card.
+ * Singleton class for storing Hardcover credentials on the SD card.
  *
- * The token is XOR-obfuscated with the device's unique hardware MAC address
- * and base64-encoded before writing to JSON (not cryptographically secure,
- * but prevents casual reading and ties the token to the specific device).
+ * Credentials are stored in a JSON file located at
+ * /.crosspoint/hardcover.json.
  *
- * Mirrors KOReaderCredentialStore's storage pattern.
+ * The API token is stored in plain text so users can easily configure it
+ * by editing the file from a computer.
  */
 class HardcoverCredentialStore {
  private:

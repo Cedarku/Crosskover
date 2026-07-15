@@ -28,9 +28,10 @@ bool HardcoverCredentialStore::saveToFile() const {
 
 bool HardcoverCredentialStore::loadFromFile() {
   if (!Storage.exists(HARDCOVER_FILE_JSON)) {
-    LOG_DBG("HCS", "No Hardcover credentials file found");
+    LOG_DBG("HCS", "Creating default Hardcover configuration");
+    saveToFile();
     return false;
-  }
+}
 
   String json = Storage.readFile(HARDCOVER_FILE_JSON);
   if (json.isEmpty()) return false;

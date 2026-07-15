@@ -3,7 +3,6 @@
 #include <ArduinoJson.h>
 #include <HalStorage.h>
 #include <Logging.h>
-#include <ObfuscationUtils.h>
 
 #include "HardcoverCredentialStore.h"
 
@@ -11,7 +10,7 @@ namespace HardcoverJsonIO {
 
 bool save(const HardcoverCredentialStore& store, const char* path) {
   JsonDocument doc;
-  doc["token_obf"] = obfuscation::obfuscateToBase64(store.getApiToken());
+  doc["apiToken"] = store.getApiToken();
   doc["userId"] = store.getUserId();
   doc["username"] = store.getUsername();
 
@@ -28,14 +27,7 @@ bool load(HardcoverCredentialStore& store, const char* json) {
     return false;
   }
 
-  obfuscation::DecodeStatus status = obfuscation::DecodeStatus::INVALID;
-  std::string token = obfuscation::deobfuscateFromBase64(doc["token_obf"] | "", &status);
-  if (status == obfuscation::DecodeStatus::INVALID) {
-    LOG_ERR("HCS", "Ignoring unreadable Hardcover token");
-    token.clear();
-  }
-
-  store.setApiToken(token);
+  store.setApiToken(doc["apiToken"] | "");
   store.setIdentity(doc["userId"] | (int64_t)0, doc["username"] | std::string(""));
   return true;
 }
