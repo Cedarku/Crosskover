@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstdio>
 
+#include "HardcoverSyncActivity.h"
 #include "MappedInputManager.h"
 #include "activities/ActivityResult.h"
 #include "activities/home/FileBrowserActionActivity.h"
@@ -250,8 +251,9 @@ void EpubReaderClippingListActivity::showClippingActionMenu(const bool ignoreIni
   const Clipping selectedClipping = clippings[selectedIndex];
   const char* title = selectedClipping.chapterTitle[0] != '\0' ? selectedClipping.chapterTitle : tr(STR_CLIPPINGS);
   std::vector<FileBrowserActionActivity::MenuItem> items;
-  items.reserve(1);
+  items.reserve(2);
   items.push_back({FileBrowserAction::Delete, StrId::STR_DELETE});
+  items.push_back({FileBrowserAction::SyncHighlightsHardcover, StrId::STR_HARDCOVER_SYNC_HIGHLIGHTS});
 
   startActivityForResult(
       std::make_unique<FileBrowserActionActivity>(renderer, mappedInput, title, std::move(items),
@@ -264,7 +266,23 @@ void EpubReaderClippingListActivity::showClippingActionMenu(const bool ignoreIni
         }
 
         const auto* actionResult = std::get_if<FileBrowserActionResult>(&result.data);
-        if (!actionResult || static_cast<FileBrowserAction>(actionResult->action) != FileBrowserAction::Delete) {
+        if (!actionResult) {
+          requestUpdate();
+          return;
+        }
+
+        if (static_cast<FileBrowserAction>(actionResult->action) == FileBrowserAction::SyncHighlightsHardcover) {
+          // Syncs every unsynced highlight for the book, not just the one that
+          // was selected when the menu was opened - the current selection is
+          // only used as the entry point into this menu.
+          startActivityForResult(
+              std::make_unique<HardcoverSyncActivity>(renderer, mappedInput, CLIPPINGS.getBookFilePath(),
+                                                       CLIPPINGS.getBookTitle(), CLIPPINGS.getBookAuthor(), clippings),
+              [this](const ActivityResult&) { requestUpdate(); });
+          return;
+        }
+
+        if (static_cast<FileBrowserAction>(actionResult->action) != FileBrowserAction::Delete) {
           requestUpdate();
           return;
         }
