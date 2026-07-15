@@ -18,7 +18,7 @@ The following features are planned for future releases:
 1. Generate a Personal API Token from your Hardcover account.
 2. Open `/.crosspoint/hardcover.json` on the SD card.
 3. Paste the token into the `apiToken` field.
-4. Save the file and restart the device.
+4. Save the file, then reinsert the SD card into the device.
 
 > Although authentication from the device is available, configuring the API token from a computer is currently the recommended and most convenient method.
 
