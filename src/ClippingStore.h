@@ -55,6 +55,10 @@ class ClippingStore {
   bool hasClippingForPage(uint16_t spineIndex, uint16_t page) const;
   const std::vector<Clipping>& getClippings() const { return clippings; }
 
+  const std::string& getBookFilePath() const { return bookFilePath; }
+  const std::string& getBookTitle() const { return bookTitle; }
+  const std::string& getBookAuthor() const { return bookAuthor; }
+
   static bool hasAnyClippings();
   static bool getAllClippedBooks(std::vector<ClippedBookEntry>& out);
   static void deleteForFilePath(const std::string& filePath, const std::string& bookType);
