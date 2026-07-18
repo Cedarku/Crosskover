@@ -169,7 +169,7 @@ HardcoverSyncClient::Error runGraphQL(const std::string& query, JsonDocument& va
 
   ResponseBuffer buf;
   const int httpCode = postGraphQL(body, buf);
-  LOG_DBG("HCSync", "GraphQL response: %d", httpCode);
+LOG_DBG("HCSync", "GraphQL response: %d (transportErr=%d)", httpCode, HardcoverSyncClient::lastTransportError);
 
   if (httpCode < 0) return HardcoverSyncClient::NETWORK_ERROR;
   if (httpCode == 401 || httpCode == 403) return HardcoverSyncClient::AUTH_FAILED;
