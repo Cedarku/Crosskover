@@ -34,7 +34,7 @@ constexpr char GRAPHQL_URL[] = "https://api.hardcover.app/v1/graphql";
 // See the note in KOReaderSyncClient.cpp: TLS handshakes on the ESP32-C3
 // consume a large chunk of heap, so refuse to even try below this threshold.
 constexpr uint32_t MIN_HEAP_FOR_TLS = 55000;
-constexpr int HTTP_BUF_SIZE = 4096;  // GraphQL responses are bigger than KOSync's tiny JSON
+constexpr int HTTP_BUF_SIZE = 2048; // Matches KOReaderSyncClient.cpp's proven-working value.
 
 std::string toLower(const std::string& s) {
   std::string out = s;
@@ -125,7 +125,6 @@ int postGraphQL(const std::string& body, ResponseBuffer& outBuf) {
   const std::string authHeader = HARDCOVER_STORE.getAuthorizationHeader();
   if (esp_http_client_set_header(client, "Content-Type", "application/json") != ESP_OK ||
       esp_http_client_set_header(client, "Authorization", authHeader.c_str()) != ESP_OK ||
-      esp_http_client_set_header(client, "User-Agent", "Crosskover/1.0") != ESP_OK ||
       esp_http_client_set_post_field(client, body.c_str(), body.length()) != ESP_OK) {
     LOG_ERR("HCSync", "Failed to set request headers/body");
     esp_http_client_cleanup(client);
@@ -133,15 +132,7 @@ int postGraphQL(const std::string& body, ResponseBuffer& outBuf) {
     return -1;
   }
 
-  LOG_ERR("HCSync",
-        "Before perform: FreeHeap=%u MaxAlloc=%u",
-        ESP.getFreeHeap(),
-        ESP.getMaxAllocHeap());
   const esp_err_t err = esp_http_client_perform(client);
-  LOG_ERR("HCSync",
-        "After perform: FreeHeap=%u MaxAlloc=%u",
-        ESP.getFreeHeap(),
-        ESP.getMaxAllocHeap());
   const int httpCode = esp_http_client_get_status_code(client);
   HardcoverSyncClient::lastHttpCode = httpCode;
   HardcoverSyncClient::lastTransportError = static_cast<int>(err);
@@ -178,7 +169,7 @@ HardcoverSyncClient::Error runGraphQL(const std::string& query, JsonDocument& va
 
   ResponseBuffer buf;
   const int httpCode = postGraphQL(body, buf);
-  LOG_ERR("HCSync", "GraphQL response: %d (transportErr=%d)",
+  LOG_DBG("HCSync", "GraphQL response: %d (transportErr=%d)",
         httpCode, HardcoverSyncClient::lastTransportError);
 
   if (httpCode < 0) return HardcoverSyncClient::NETWORK_ERROR;
