@@ -125,6 +125,7 @@ int postGraphQL(const std::string& body, ResponseBuffer& outBuf) {
   const std::string authHeader = HARDCOVER_STORE.getAuthorizationHeader();
   if (esp_http_client_set_header(client, "Content-Type", "application/json") != ESP_OK ||
       esp_http_client_set_header(client, "Authorization", authHeader.c_str()) != ESP_OK ||
+      esp_http_client_set_header(client, "User-Agent", "Crosskover/1.0") != ESP_OK ||
       esp_http_client_set_post_field(client, body.c_str(), body.length()) != ESP_OK) {
     LOG_ERR("HCSync", "Failed to set request headers/body");
     esp_http_client_cleanup(client);
@@ -132,7 +133,15 @@ int postGraphQL(const std::string& body, ResponseBuffer& outBuf) {
     return -1;
   }
 
+  LOG_ERR("HCSync",
+        "Before perform: FreeHeap=%u MaxAlloc=%u",
+        ESP.getFreeHeap(),
+        ESP.getMaxAllocHeap());
   const esp_err_t err = esp_http_client_perform(client);
+  LOG_ERR("HCSync",
+        "After perform: FreeHeap=%u MaxAlloc=%u",
+        ESP.getFreeHeap(),
+        ESP.getMaxAllocHeap());
   const int httpCode = esp_http_client_get_status_code(client);
   HardcoverSyncClient::lastHttpCode = httpCode;
   HardcoverSyncClient::lastTransportError = static_cast<int>(err);
@@ -169,7 +178,8 @@ HardcoverSyncClient::Error runGraphQL(const std::string& query, JsonDocument& va
 
   ResponseBuffer buf;
   const int httpCode = postGraphQL(body, buf);
-LOG_DBG("HCSync", "GraphQL response: %d (transportErr=%d)", httpCode, HardcoverSyncClient::lastTransportError);
+  LOG_ERR("HCSync", "GraphQL response: %d (transportErr=%d)",
+        httpCode, HardcoverSyncClient::lastTransportError);
 
   if (httpCode < 0) return HardcoverSyncClient::NETWORK_ERROR;
   if (httpCode == 401 || httpCode == 403) return HardcoverSyncClient::AUTH_FAILED;
