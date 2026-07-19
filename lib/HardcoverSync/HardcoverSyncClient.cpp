@@ -42,6 +42,15 @@ std::string toLower(const std::string& s) {
   return out;
 }
 
+// Heap diagnostics around the TLS handshake, matching KOReaderSyncClient's
+// logHeapStats pattern. Useful for correlating MBEDTLS_ERR_X509_ALLOC_FAILED
+// with the actual free/min/max-alloc heap at the moment of failure, rather
+// than reproducing the issue separately with the serial monitor.
+void logHeapStats(const char* phase) {
+  LOG_DBG("HCSync", "%s heap: free=%u min=%u max_alloc=%u", phase, (unsigned)ESP.getFreeHeap(),
+          (unsigned)ESP.getMinFreeHeap(), (unsigned)ESP.getMaxAllocHeap());
+}
+
 // Response buffer shared by both transport implementations below.
 struct ResponseBuffer {
   char* data = nullptr;
@@ -78,8 +87,10 @@ int postGraphQL(const std::string& body, ResponseBuffer& outBuf) {
   http.begin(secureClient, GRAPHQL_URL);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("Authorization", HARDCOVER_STORE.getAuthorizationHeader().c_str());
-
+  
+  logHeapStats("Before GraphQL POST");
   const int httpCode = http.POST(body.c_str());
+  logHeapStats("After GraphQL POST");
   HardcoverSyncClient::lastHttpCode = httpCode;
   HardcoverSyncClient::lastTransportError = (httpCode < 0) ? httpCode : 0;
 
@@ -132,7 +143,9 @@ int postGraphQL(const std::string& body, ResponseBuffer& outBuf) {
     return -1;
   }
 
+  logHeapStats("Before GraphQL perform");
   const esp_err_t err = esp_http_client_perform(client);
+  logHeapStats("After GraphQL perform");
   const int httpCode = esp_http_client_get_status_code(client);
   HardcoverSyncClient::lastHttpCode = httpCode;
   HardcoverSyncClient::lastTransportError = static_cast<int>(err);
@@ -167,6 +180,7 @@ HardcoverSyncClient::Error runGraphQL(const std::string& query, JsonDocument& va
   std::string body;
   serializeJson(reqDoc, body);
 
+  logHeapStats("Before GraphQL request");
   ResponseBuffer buf;
   const int httpCode = postGraphQL(body, buf);
   LOG_DBG("HCSync", "GraphQL response: %d (transportErr=%d)",
