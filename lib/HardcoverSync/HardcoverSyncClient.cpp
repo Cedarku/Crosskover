@@ -178,7 +178,9 @@ int postGraphQL(const std::string& body, ResponseBuffer& outBuf) {
   config.buffer_size = HTTP_BUF_SIZE;
   config.buffer_size_tx = HTTP_BUF_SIZE;
   config.cert_pem = ISRG_ROOT_X1_PEM;
-
+  config.cert_len = sizeof(ISRG_ROOT_X1_PEM);  // incluye el '\0' final — mbedtls_x509_crt_parse()
+                                              // lo necesita para detectar que esto es PEM, no DER.
+  LOG_DBG("HCSync", "CA PEM length: %zu", sizeof(ISRG_ROOT_X1_PEM));
   esp_http_client_handle_t client = esp_http_client_init(&config);
   if (!client) {
     HardcoverSyncClient::lastTransportError = ESP_ERR_NO_MEM;
